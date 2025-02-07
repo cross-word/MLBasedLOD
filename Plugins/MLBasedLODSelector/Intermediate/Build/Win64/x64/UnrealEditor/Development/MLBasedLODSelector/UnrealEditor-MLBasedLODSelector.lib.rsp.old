@@ -1,0 +1,16 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-MLBasedLODSelector.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"D:\unreal_project\LODPlugin\Intermediate\Build\Win64\x64\LODPluginEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.Cpp20.h.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\Module.MLBasedLODSelector.cpp.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\DataLogger.cpp.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\MLBasedLODSelector.cpp.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\NaniteMLManager.cpp.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\NaniteMLViewExtension.cpp.obj"
+"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\Default.rc2.res"
+/OUT:"D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\x64\UnrealEditor\Development\MLBasedLODSelector\UnrealEditor-MLBasedLODSelector.lib"

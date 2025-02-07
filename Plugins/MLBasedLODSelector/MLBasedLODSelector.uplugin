@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "MLBasedLODSelector",
+	"Description": "A plugin replace LOD selection to ML dynamic",
+	"Category": "Rendering",
+	"CreatedBy": "cross-word",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "MLBasedLODSelector",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

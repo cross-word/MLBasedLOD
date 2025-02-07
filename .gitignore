@@ -1,0 +1,14 @@
+/.vs
+/Binaries
+/Config
+/Content
+/DerivedDataCache
+/intermediate
+/Saved
+.ignore
+.vsconfig
+LODPlugin.code-workspace
+LODPlugin.sln
+LODPlugin.uproject
+/Plugins/tempPlugin
+/Plugins/MLBasedNaniteExtend

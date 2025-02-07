@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\source\\mlbasedlodselector\\private\\nanitemlmanager.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\unreal_project\\lodplugin\\intermediate\\build\\win64\\x64\\lodplugin\\development\\engine\\sharedpch.engine.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\intermediate\\build\\win64\\x64\\unrealgame\\development\\mlbasedlodselector\\definitions.mlbasedlodselector.h",
+            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\source\\mlbasedlodselector\\public\\nanitemlmanager.h",
+            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\intermediate\\build\\win64\\unrealgame\\inc\\mlbasedlodselector\\uht\\nanitemlmanager.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
