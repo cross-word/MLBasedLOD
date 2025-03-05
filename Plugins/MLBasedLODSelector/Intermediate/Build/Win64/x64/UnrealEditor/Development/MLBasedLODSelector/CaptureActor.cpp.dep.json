@@ -31,7 +31,10 @@
             "d:\\ue_5.5\\engine\\source\\runtime\\imagewrapper\\public\\imagewrapperoutputtypes.h",
             "d:\\ue_5.5\\engine\\source\\runtime\\engine\\public\\imageutils.h",
             "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\source\\mlbasedlodselector\\public\\datalogger.h",
-            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\intermediate\\build\\win64\\unrealeditor\\inc\\mlbasedlodselector\\uht\\datalogger.generated.h"
+            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\intermediate\\build\\win64\\unrealeditor\\inc\\mlbasedlodselector\\uht\\datalogger.generated.h",
+            "d:\\ue_5.5\\engine\\source\\runtime\\engine\\classes\\camera\\cameracomponent.h",
+            "d:\\ue_5.5\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\cameracomponent.generated.h",
+            "d:\\ue_5.5\\engine\\source\\runtime\\engine\\public\\editorsupportdelegates.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

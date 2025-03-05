@@ -1,3 +1,5 @@
+Plugins/MLBasedLODSelector/Binaries/*
+Plugins/MLBasedLODSelector/Intermediate/*
 /.vs
 /Binaries
 /Config
@@ -12,6 +14,3 @@ LODPlugin.sln
 LODPlugin.uproject
 /Plugins/tempPlugin
 /Plugins/MLBasedNaniteExtend
-/Plugins/MLBasedLODSelector/Binaries
-/Plugins/MLBasedLODSelector/Intermediate
-

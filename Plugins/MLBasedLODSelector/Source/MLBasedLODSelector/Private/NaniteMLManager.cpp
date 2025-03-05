@@ -21,7 +21,7 @@ void UNaniteMLManager::ShutdownModel()
 {
     // 모델 자원 해제용
 }
-
+/*
 float GetActorScreenSize(AActor* TargetActor, UWorld* World)
 {
     if (!TargetActor || !GEngine->GetFirstLocalPlayerController(World))
@@ -128,7 +128,7 @@ float GetMemoryUsage(AActor* Actor)
     }
     return NumMaterial;
 }
-
+*/
 /*
   입력 Actor를 바탕으로 모델 inference
   모델 input : camera distance, bound, polygon amount, material amount, memory usage, texture size, (선택 : actor importance, fps)
@@ -170,6 +170,8 @@ void UNaniteMLManager::RunInferenceForActor(
     FVector CameraLocation = ViewInfo.Location;
     float Distance = FVector::Dist(ActorLocation, CameraLocation);
 
+    //학습후 재개
+    /*
     // bound
     float ScreenBound = GetActorScreenSize(Actor, World);
 
@@ -192,23 +194,10 @@ void UNaniteMLManager::RunInferenceForActor(
     InputData.Add(NumTriangle);
     InputData.Add(NumMatrial);
     InputData.Add(MemoryUsage);
+    */
 
     //model inference 아직 미구현
     float LodBiasPred = 0.0f; // -2 ~ +2 사이 예측값
-
-    //log
-    if (int(fps) % 5 == 1)
-    {
-        UDataLogger::Get().LogData(
-            Distance,
-            ScreenBound,
-            NumTriangle,
-            NumMatrial,
-            MemoryUsage,
-            fps,
-            LodBiasPred
-        );
-    }
 
     // 4) 결과 해석
     float CullThreshold = 0.5f;

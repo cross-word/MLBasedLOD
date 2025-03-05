@@ -29,7 +29,7 @@ void UDataLogger::StartLogging()
     PlatformFile.CreateDirectoryTree(*FPaths::GetPath(LogFilePath));
 
     // CSV 헤더
-    FString Header = TEXT("Distance,ScreenBound,NumTriangle,NumMatrial,MemoryUsage,fps,LodBiasPred\n");
+    FString Header = TEXT("sceneID,Distance,ScreenBound,NumTriangle,NumMatrial,MemoryUsage,fps,LodBiasPred\n");
     FFileHelper::SaveStringToFile(Header, *LogFilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
 
@@ -39,6 +39,7 @@ void UDataLogger::StopLogging()
 }
 
 void UDataLogger::LogData(
+    FString Scene_id,
     float Distance,
     float ScreenBound,
     float NumTriangle,
@@ -55,7 +56,8 @@ void UDataLogger::LogData(
 
     // CSV: DeltaTime, ActorName, Distance, CosAngle, BoundingRadius, CullLabel, LODBias
     FString LogLine = FString::Printf(
-        TEXT("%f,%f,%f,%f,%f,%f,%f\n"),
+        TEXT("%s,%f,%f,%f,%f,%f,%f,%f\n"),
+        *Scene_id,
         Distance,
         ScreenBound,
         NumTriangle,

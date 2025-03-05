@@ -28,6 +28,7 @@ public:
 
     // 매 프레임(or 주기) 액터 정보를 기록
     void LogData(
+        FString Scene_id,
         float Distance,
         float ScreenBound,
         float NumTriangle,
