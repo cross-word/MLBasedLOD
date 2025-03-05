@@ -18,15 +18,13 @@ public:
     // 싱글턴 스타일 접근
     static UDataLogger& Get();
 
-    // 로그 시작 (파일 열기 등)
     UFUNCTION(BlueprintCallable, Category="logger")
     void StartLogging();
 
-    // 로그 종료 (파일 닫기 등)
     UFUNCTION(BlueprintCallable, Category = "logger")
     void StopLogging();
 
-    // 매 프레임(or 주기) 액터 정보를 기록
+    // 액터 정보를 기록
     void LogData(
         FString Scene_id,
         float Distance,
@@ -39,10 +37,6 @@ public:
     );
 
 private:
-    // 실제 로깅에 쓸 파일 경로
+    // 로깅에 쓸 파일 경로
     FString LogFilePath;
-
-    // 파일에 한 줄씩 바로 append할지,
-    // 메모리에 모아뒀다가 나중에 flush할지 여부
-    bool bIsLogging = false;
 };

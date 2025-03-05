@@ -25,6 +25,7 @@ ACaptureActor::ACaptureActor()
     RootComponent = SceneCapture;
 }
 
+// 기본설정
 void ACaptureActor::BeginPlay()
 {
     Super::BeginPlay();
@@ -58,6 +59,7 @@ void ACaptureActor::BeginPlay()
     }
 }
 
+// 5초마다 캡쳐 진행
 void ACaptureActor::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
@@ -79,10 +81,10 @@ float GetActorScreenSize(AActor* TargetActor, UWorld* World)
     FVector Origin;
     FVector BoxExtent;
 
-    // 1. 액터의 바운딩 박스(경계 상자) 가져오기
+    //액터의 바운딩 박스(경계 상자) 가져오기
     TargetActor->GetActorBounds(true, Origin, BoxExtent);
 
-    // 2. 바운딩 박스의 코너 좌표 계산 (8개의 코너)
+    //바운딩 박스의 코너 좌표 계산 (8개의 코너)
     TArray<FVector> BoxCorners;
     BoxCorners.Add(Origin + FVector(-BoxExtent.X, -BoxExtent.Y, -BoxExtent.Z));
     BoxCorners.Add(Origin + FVector(BoxExtent.X, -BoxExtent.Y, -BoxExtent.Z));
@@ -97,7 +99,7 @@ float GetActorScreenSize(AActor* TargetActor, UWorld* World)
     FVector2D MaxScreenPos(-FLT_MAX, -FLT_MAX);
     FVector2D ScreenPosition;
 
-    // 3. 3D 공간 좌표를 화면 좌표로 변환
+    //공간 좌표를 화면 좌표로 변환
     for (const FVector& Corner : BoxCorners)
     {
         if (GEngine->GetFirstLocalPlayerController(World)->ProjectWorldLocationToScreen(Corner, ScreenPosition))
@@ -112,7 +114,7 @@ float GetActorScreenSize(AActor* TargetActor, UWorld* World)
             return 0.0f;
         }
     }
-    // 4. 화면에서 차지하는 픽셀 크기 계산
+    //화면에서 차지하는 픽셀 크기 계산
     int32 ScreenSizeX = 0;
     int32 ScreenSizeY = 0;
     GEngine->GetFirstLocalPlayerController(World)->GetViewportSize(ScreenSizeX, ScreenSizeY);
@@ -126,9 +128,6 @@ float GetActorScreenSize(AActor* TargetActor, UWorld* World)
     float ScreenHeight = MaxScreenPos.Y - MinScreenPos.Y;
     float ScreenSize = (ScreenWidth * ScreenHeight);
     float ScreenRatio = ScreenSize / TotalArea;
-    //FVector2D ScreenViewPoint;
-    //GEngine->GameViewport->GetViewportSize(ScreenViewPoint);
-    //float ScreenRatio = (ScreenWidth * ScreenHeight) / (ScreenViewPoint.X * ScreenViewPoint.Y);
 
     return ScreenRatio;
 }
@@ -203,6 +202,11 @@ void WaitForGPUFinish()
     RenderFence.Wait();
 }
 
+/*
+각 액터를 순회하면서 LOD를 강제하면서 데이터 저장
+액터 순회 후 render명령을 보낸 후 화면 캡쳐
+LOD를 변경하고 액터 순회 재개
+*/
 void ACaptureActor::CaptureAndLogMultipleLOD()
 {
     UWorld* World = GetWorld();
@@ -305,7 +309,7 @@ void ACaptureActor::CaptureAndLogMultipleLOD()
                 }
             }
 
-            // 다음 LOD를 재귀 호출
+            // 다음 LOD level을 재귀 호출
             (*CaptureLODRecursive)(LODIndex + 1);
         });
     };
@@ -353,7 +357,6 @@ void ACaptureActor::SaveRenderTargetToDisk(UTextureRenderTarget2D* RT, const FSt
     }
 }
 
-
-/*
-TODO: bounding box 수정
-*/
+///////////////////////////////
+// TODO : NumTriangle 어찌할것?
+///////////////////////////////

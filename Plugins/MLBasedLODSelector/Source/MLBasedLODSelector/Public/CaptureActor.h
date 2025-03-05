@@ -20,7 +20,7 @@ class MLBASEDLODSELECTOR_API ACaptureActor : public AActor
 public:
     ACaptureActor();
 
-    // SceneCapture
+    // SceneCaptureComponent
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
     USceneCaptureComponent2D* SceneCapture;
 
@@ -36,6 +36,7 @@ protected:
     virtual void Tick(float DeltaSeconds) override;
 
 private:
+    // do capture
     void SaveRenderTargetToDisk(UTextureRenderTarget2D* RT, const FString& FullFilePath);
     TSharedPtr<TFunction<void(int32)>> CaptureLODRecursive;
     float TotalTime = 0.0f;

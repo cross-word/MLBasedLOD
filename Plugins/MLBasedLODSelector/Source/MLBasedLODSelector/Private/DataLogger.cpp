@@ -12,11 +12,6 @@ UDataLogger& UDataLogger::Get()
 
 void UDataLogger::StartLogging()
 {
-    if (bIsLogging)
-        return;
-
-    bIsLogging = true;
-
     // 로그 파일 경로 설정
     LogFilePath = FPaths::Combine(
         FPaths::ProjectSavedDir(),
@@ -33,11 +28,6 @@ void UDataLogger::StartLogging()
     FFileHelper::SaveStringToFile(Header, *LogFilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 }
 
-void UDataLogger::StopLogging()
-{
-    bIsLogging = false;
-}
-
 void UDataLogger::LogData(
     FString Scene_id,
     float Distance,
@@ -48,13 +38,7 @@ void UDataLogger::LogData(
     float fps,
     float LodBiasPred
 ) {
-    // 잠시멈춤기능 현재는 안씀
-    //if (!bIsLogging || !Actor)
-    //{
-    //   return;
-    //}
-
-    // CSV: DeltaTime, ActorName, Distance, CosAngle, BoundingRadius, CullLabel, LODBias
+    // CSV: SceneID, Distance, ScreenBound, NumTriangle, NumMatrial, MemoryUsage, ms, Lod
     FString LogLine = FString::Printf(
         TEXT("%s,%f,%f,%f,%f,%f,%f,%f\n"),
         *Scene_id,
@@ -66,7 +50,7 @@ void UDataLogger::LogData(
         fps,
         LodBiasPred
     );
-    // 파일에 append
+
     FFileHelper::SaveStringToFile(
         LogLine,
         *LogFilePath,

@@ -32,10 +32,10 @@ void FMLBasedLODSelectorModule::OnPostEngineInit()
         UDataLogger::Get().StartLogging();
 
         ViewExtension = FSceneViewExtensions::NewExtension<FNaniteMLViewExtension>();
-        UE_LOG(LogTemp, Display, TEXT("정상 실행"));
+        UE_LOG(LogTemp, Display, TEXT("MLLOD Initialized"));
     }
     else
     {
-        UE_LOG(LogTemp, Display, TEXT("비정상 실행"));
+        UE_LOG(LogTemp, Error, TEXT("ERROR: Engine is empty"));
     }
 }

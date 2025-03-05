@@ -129,10 +129,11 @@ float GetMemoryUsage(AActor* Actor)
     return NumMaterial;
 }
 */
+
 /*
   입력 Actor를 바탕으로 모델 inference
-  모델 input : camera distance, bound, polygon amount, material amount, memory usage, texture size, (선택 : actor importance, fps)
-  모델 output : cull, LOD bias
+  모델 input : Distance, ScreenBound, NumTriangle, NumMatrial, MemoryUsage
+  모델 output : LOD bias
 */
 void UNaniteMLManager::RunInferenceForActor(
     AActor* Actor,
@@ -199,12 +200,11 @@ void UNaniteMLManager::RunInferenceForActor(
     //model inference 아직 미구현
     float LodBiasPred = 0.0f; // -2 ~ +2 사이 예측값
 
-    // 4) 결과 해석
     float CullThreshold = 0.5f;
     LodBias = FMath::Clamp(FMath::RoundToInt(LodBiasPred), -2, 2);
 }
 
 
 /*
-TODO : cull과 LODBias 알고리즘 구현
+TODO : 모델 학습 후 inference구현
 */

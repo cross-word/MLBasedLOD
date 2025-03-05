@@ -77,12 +77,12 @@ struct Z_Construct_UClass_ACaptureActor_Statics
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_SceneCapture_MetaData[] = {
 		{ "Category", "Capture" },
 #if !UE_BUILD_SHIPPING
-		{ "Comment", "// SceneCapture\n" },
+		{ "Comment", "// SceneCaptureComponent\n" },
 #endif
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/CaptureActor.h" },
 #if !UE_BUILD_SHIPPING
-		{ "ToolTip", "SceneCapture" },
+		{ "ToolTip", "SceneCaptureComponent" },
 #endif
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_MaxLOD_MetaData[] = {
@@ -150,10 +150,10 @@ ACaptureActor::~ACaptureActor() {}
 struct Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_CaptureActor_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_ACaptureActor, ACaptureActor::StaticClass, TEXT("ACaptureActor"), &Z_Registration_Info_UClass_ACaptureActor, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(ACaptureActor), 1165084826U) },
+		{ Z_Construct_UClass_ACaptureActor, ACaptureActor::StaticClass, TEXT("ACaptureActor"), &Z_Registration_Info_UClass_ACaptureActor, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(ACaptureActor), 1959283726U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_CaptureActor_h_2676464597(TEXT("/Script/MLBasedLODSelector"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_CaptureActor_h_2808896913(TEXT("/Script/MLBasedLODSelector"),
 	Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_CaptureActor_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_CaptureActor_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);
