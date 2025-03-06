@@ -46,43 +46,12 @@ DEFINE_FUNCTION(UDataLogger::execStartLogging)
 }
 // End Class UDataLogger Function StartLogging
 
-// Begin Class UDataLogger Function StopLogging
-struct Z_Construct_UFunction_UDataLogger_StopLogging_Statics
-{
-#if WITH_METADATA
-	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
-		{ "Category", "logger" },
-		{ "ModuleRelativePath", "Public/DataLogger.h" },
-	};
-#endif // WITH_METADATA
-	static const UECodeGen_Private::FFunctionParams FuncParams;
-};
-const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UDataLogger_StopLogging_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UDataLogger, nullptr, "StopLogging", nullptr, nullptr, nullptr, 0, 0, RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UDataLogger_StopLogging_Statics::Function_MetaDataParams), Z_Construct_UFunction_UDataLogger_StopLogging_Statics::Function_MetaDataParams) };
-UFunction* Z_Construct_UFunction_UDataLogger_StopLogging()
-{
-	static UFunction* ReturnFunction = nullptr;
-	if (!ReturnFunction)
-	{
-		UECodeGen_Private::ConstructUFunction(&ReturnFunction, Z_Construct_UFunction_UDataLogger_StopLogging_Statics::FuncParams);
-	}
-	return ReturnFunction;
-}
-DEFINE_FUNCTION(UDataLogger::execStopLogging)
-{
-	P_FINISH;
-	P_NATIVE_BEGIN;
-	P_THIS->StopLogging();
-	P_NATIVE_END;
-}
-// End Class UDataLogger Function StopLogging
-
 // Begin Class UDataLogger
 void UDataLogger::StaticRegisterNativesUDataLogger()
 {
 	UClass* Class = UDataLogger::StaticClass();
 	static const FNameNativePtrPair Funcs[] = {
 		{ "StartLogging", &UDataLogger::execStartLogging },
-		{ "StopLogging", &UDataLogger::execStopLogging },
 	};
 	FNativeFunctionRegistrar::RegisterFunctions(Class, Funcs, UE_ARRAY_COUNT(Funcs));
 }
@@ -108,7 +77,6 @@ struct Z_Construct_UClass_UDataLogger_Statics
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
 		{ &Z_Construct_UFunction_UDataLogger_StartLogging, "StartLogging" }, // 751314773
-		{ &Z_Construct_UFunction_UDataLogger_StopLogging, "StopLogging" }, // 816768730
 	};
 	static_assert(UE_ARRAY_COUNT(FuncInfo) < 2048);
 	static constexpr FCppClassTypeInfoStatic StaticCppClassTypeInfo = {
@@ -157,10 +125,10 @@ UDataLogger::~UDataLogger() {}
 struct Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UDataLogger, UDataLogger::StaticClass, TEXT("UDataLogger"), &Z_Registration_Info_UClass_UDataLogger, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UDataLogger), 2664175517U) },
+		{ Z_Construct_UClass_UDataLogger, UDataLogger::StaticClass, TEXT("UDataLogger"), &Z_Registration_Info_UClass_UDataLogger, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UDataLogger), 1730666081U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_2526499973(TEXT("/Script/MLBasedLODSelector"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_3868073648(TEXT("/Script/MLBasedLODSelector"),
 	Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

@@ -216,6 +216,7 @@ void ACaptureActor::CaptureAndLogMultipleLOD()
         return;
     }
     float OriginalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(World);
+    UGameplayStatics::SetGlobalTimeDilation(World, 0.0f);
     //components to log
     TArray<AActor*> AllActors;
     UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
@@ -315,18 +316,6 @@ void ACaptureActor::CaptureAndLogMultipleLOD()
     };
     SceneTime = World->GetTimeSeconds();
     (*CaptureLODRecursive)(1);
-    for (AActor* Actor : AllActors)
-    {
-        if (UStaticMeshComponent* SMC = Actor->FindComponentByClass<UStaticMeshComponent>())
-        {
-            SMC->SetForcedLodModel(0); // 해제
-        }
-        if (USkeletalMeshComponent* SkMC = Actor->FindComponentByClass<USkeletalMeshComponent>())
-        {
-            SkMC->SetForcedLOD(0);
-        }
-    }
-    UGameplayStatics::SetGlobalTimeDilation(World, OriginalTimeDilation);
     return;
 }
 

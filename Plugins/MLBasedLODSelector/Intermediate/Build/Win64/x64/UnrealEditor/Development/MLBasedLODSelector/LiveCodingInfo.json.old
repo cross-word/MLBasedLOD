@@ -6,12 +6,12 @@
 			"NaniteMLManager.gen.cpp.obj",
 			"PerModuleInline.gen.cpp.obj",
 			"CaptureActor.cpp.obj",
-			"DataLogger.gen.cpp.obj",
-			"MLBasedLODSelector.init.gen.cpp.obj",
-			"DataLogger.cpp.obj",
 			"MLBasedLODSelector.cpp.obj",
 			"NaniteMLManager.cpp.obj",
-			"NaniteMLViewExtension.cpp.obj"
+			"NaniteMLViewExtension.cpp.obj",
+			"DataLogger.gen.cpp.obj",
+			"MLBasedLODSelector.init.gen.cpp.obj",
+			"DataLogger.cpp.obj"
 		]
 	}
 }

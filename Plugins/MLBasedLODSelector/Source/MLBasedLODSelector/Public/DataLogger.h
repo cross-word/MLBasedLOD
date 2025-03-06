@@ -21,9 +21,6 @@ public:
     UFUNCTION(BlueprintCallable, Category="logger")
     void StartLogging();
 
-    UFUNCTION(BlueprintCallable, Category = "logger")
-    void StopLogging();
-
     // 액터 정보를 기록
     void LogData(
         FString Scene_id,

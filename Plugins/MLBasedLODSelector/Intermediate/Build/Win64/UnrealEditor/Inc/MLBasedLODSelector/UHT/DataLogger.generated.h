@@ -15,7 +15,6 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 #define MLBASEDLODSELECTOR_DataLogger_generated_h
 
 #define FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_DataLogger_h_15_RPC_WRAPPERS_NO_PURE_DECLS \
-	DECLARE_FUNCTION(execStopLogging); \
 	DECLARE_FUNCTION(execStartLogging);
 
 
