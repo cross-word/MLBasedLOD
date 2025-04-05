@@ -75,15 +75,15 @@ void UNaniteMLManager::RunInferenceForActor(
     }
 
     //input 데이터 준비
-    std::vector<float>* InputData;
-    UMLInferenceHelper::Get().PreProcessActor(InputData, Actor, World);
+    std::vector<float> InputData;
+    InputData = UMLInferenceHelper::Get().PreProcessActor(Actor, World, ViewInfo);
     
     std::vector<int64_t> input_shape = { 1, 5 };
     Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
         memory_info,
-        InputData->data(),
-        InputData->size(),
+        InputData.data(),
+        InputData.size(),
         input_shape.data(),
         input_shape.size()
     );

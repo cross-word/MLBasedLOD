@@ -9,7 +9,8 @@ class UMLInferenceHelper : public UObject
 {
 public:
 	static UMLInferenceHelper& Get();
-	void PreProcessActor(std::vector<float>* InputData, AActor* Actor, UWorld* World);
+	std::vector<float> PreProcessActor(AActor* Actor, UWorld* World, const FMinimalViewInfo& ViewInfo);
+	std::vector<float> PreProcessActor(AActor* Actor, UWorld* World);
 
 private:
 	float GetActorScreenSize(AActor* TargetActor, UWorld* World);

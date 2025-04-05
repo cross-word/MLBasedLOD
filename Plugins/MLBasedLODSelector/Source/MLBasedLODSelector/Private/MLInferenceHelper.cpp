@@ -10,10 +10,39 @@ UMLInferenceHelper& UMLInferenceHelper::Get()
 /*
  액터를 바탕으로 InputData 벡터에 Distace, ScreenBound, NumTriangle, NumMatrial, MemoryUsage를 순서대로 계산하여 넣어줌
 */
-void UMLInferenceHelper::PreProcessActor(std::vector<float>* InputData, AActor* Actor, UWorld* World)
+std::vector<float> UMLInferenceHelper::PreProcessActor(AActor* Actor, UWorld* World, const FMinimalViewInfo& ViewInfo)
 {
     // camera distance
-    FVector CameraLocation = UGameplayStatics::GetPlayerController(this, 0)->PlayerCameraManager->GetCameraLocation();
+    FVector ActorLocation = Actor->GetActorLocation();
+    FVector CameraLocation = ViewInfo.Location;
+    float Distance = FVector::Dist(ActorLocation, CameraLocation);
+
+    // bound
+    float ScreenBound = GetActorScreenSize(Actor, World);
+
+    // polygon
+    float NumTriangle = GetNumTriangle(Actor);
+
+    // material
+    float NumMatrial = GetNumMaterial(Actor);
+
+    // memory usage
+    float MemoryUsage = GetMemoryUsage(Actor);
+
+    std::vector<float> InputData;
+    InputData.push_back(Distance);
+    InputData.push_back(ScreenBound);
+    InputData.push_back(NumTriangle);
+    InputData.push_back(NumMatrial);
+    InputData.push_back(MemoryUsage);
+
+    return InputData;
+}
+
+std::vector<float> UMLInferenceHelper::PreProcessActor(AActor* Actor, UWorld* World)
+{
+    // camera distance
+    FVector CameraLocation = UGameplayStatics::GetPlayerController(World, 0)->PlayerCameraManager->GetCameraLocation();
     FVector ActorLocation = Actor->GetActorLocation();
     float Distance = FVector::Dist(ActorLocation, CameraLocation);
 
@@ -29,13 +58,14 @@ void UMLInferenceHelper::PreProcessActor(std::vector<float>* InputData, AActor* 
     // memory usage
     float MemoryUsage = GetMemoryUsage(Actor);
 
-    InputData->push_back(Distance);
-    InputData->push_back(ScreenBound);
-    InputData->push_back(NumTriangle);
-    InputData->push_back(NumMatrial);
-    InputData->push_back(MemoryUsage);
+    std::vector<float> InputData;
+    InputData.push_back(Distance);
+    InputData.push_back(ScreenBound);
+    InputData.push_back(NumTriangle);
+    InputData.push_back(NumMatrial);
+    InputData.push_back(MemoryUsage);
 
-    return;
+    return InputData;
 }
 
 float UMLInferenceHelper::GetActorScreenSize(AActor* TargetActor, UWorld* World)

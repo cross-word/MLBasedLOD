@@ -44,11 +44,7 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         }
 
         // ML inference
-        UNaniteMLManager::Get().RunInferenceForActor(
-            Actor,
-            ViewInfo,
-            World
-        );
+        UNaniteMLManager::Get().RunInferenceForActor(Actor, ViewInfo, World);
     }
 }
 

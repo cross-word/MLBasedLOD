@@ -205,16 +205,16 @@ void ACaptureActor::CaptureAndLogMultipleLOD()
                         {
                             if (Actor->FindComponentByClass<UStaticMeshComponent>() or Actor->FindComponentByClass<USkeletalMeshComponent>())
                             {
-                                std::vector<float>* InputData = {};
-                                UMLInferenceHelper::Get().PreProcessActor(InputData, Actor, World);
+                                std::vector<float> InputData;
+                                InputData = UMLInferenceHelper::Get().PreProcessActor(Actor, World);
 
                                 Logger.LogData(
                                     Scene_id,
-                                    InputData->at(0),
-                                    InputData->at(1),
-                                    InputData->at(2),
-                                    InputData->at(3),
-                                    InputData->at(4),
+                                    InputData[0],
+                                    InputData[1],
+                                    InputData[2],
+                                    InputData[3],
+                                    InputData[4],
                                     ms,
                                     LODIndex
                                 );
