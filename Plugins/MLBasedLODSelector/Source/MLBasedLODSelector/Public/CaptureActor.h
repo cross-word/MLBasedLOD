@@ -8,9 +8,9 @@ class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
 
 /**
- * ACaptureActor
- * - SceneCaptureComponent2D를 통해 LOD별 화면 캡처
- * - 동시에 UDataLogger로 CSV 로깅
+  ACaptureActor
+  SceneCaptureComponent2D를 통해 LOD별 화면 캡처
+  동시에 UDataLogger로 CSV 로깅
  */
 UCLASS()
 class MLBASEDLODSELECTOR_API ACaptureActor : public AActor
@@ -19,6 +19,8 @@ class MLBASEDLODSELECTOR_API ACaptureActor : public AActor
 
 public:
     ACaptureActor();
+
+    static ACaptureActor& Get();
 
     // SceneCaptureComponent
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")

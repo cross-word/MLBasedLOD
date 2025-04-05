@@ -59,7 +59,3 @@ void UDataLogger::LogData(
         EFileWrite::FILEWRITE_Append
     );
 }
-
-/*
-TODO : 저장할 때 파일명 겹치면 덮어씌지 않고 새로 만들어 저장하게
-*/

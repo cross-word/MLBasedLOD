@@ -28,37 +28,30 @@ parser.add_argument('--csv_name', type=str,
 
 args = parser.parse_args()
 
-# ------------------------------
-# Dataset 정의
-# ------------------------------
 class LODBiasChunkDataset(Dataset):
     """
     CSV가 다음처럼 5행씩 반복된다고 가정:
+      (ScencID, feat1..feat5, fps_LOD0, LOD=1, PSNR)
       (ScencID, feat1..feat5, fps_LOD1, LOD=1, PSNR)
       (ScencID, feat1..feat5, fps_LOD2, LOD=2, PSNR)
       (ScencID, feat1..feat5, fps_LOD3, LOD=3, PSNR)
-      (ScencID, feat1..feat5, fps_LOD4, LOD=4, PSNR)
-      (ScencID, feat1..feat5, fps_LOD5, LOD=5, PSNR)
-    -> 이 5행을 하나의 '씬'/'상황'으로 묶어서 처리
+      (ScencID, feat1..feat5, fps_LOD4, LOD=5, PSNR)
+    이 5행을 하나의 '씬'/'상황'으로 묶어서 처리
     """
 
     def __init__(self,
                  csv_path: str,
-                 lod_root_dirs: dict,   # {1:"LOD1/",2:"LOD2/",...}
-                 gt_root_dir: str,     # "GT/"
+                 lod_root_dirs: dict, 
+                 gt_root_dir: str,
                  alpha=args.PSNR_ratio,
-                 beta=1-args.PSNR_ratio,
-                 use_lod1_as_gt=False):
-        """
-        use_lod1_as_gt=True 면, 별도 GT 폴더 대신 LOD1 이미지를 GT로 사용 가능.
-        """
+                 beta=1-args.PSNR_ratio,):
+        
         super().__init__()
         self.df = pd.read_csv(csv_path).reset_index(drop=True)
         self.alpha = alpha
         self.beta = beta
         self.lod_root_dirs = lod_root_dirs
         self.gt_root_dir = gt_root_dir
-        self.use_lod1_as_gt = use_lod1_as_gt
 
         # 씬 개수
         self.num_scenes = len(self.df) // 5
@@ -73,37 +66,17 @@ class LODBiasChunkDataset(Dataset):
         # CSV에서 5행 chunk를 뽑음
         start_row = idx * 5
         end_row = start_row + 5
-        chunk = self.df.iloc[start_row:end_row]  # 5행
+        chunk = self.df.iloc[start_row:end_row]
 
-        # feature1..5는 모두 동일하다고 가정 -> 첫 행에서 가져옴
+        # feature1..5는 모두 동일하다고 가정
         row0 = chunk.iloc[0]
         x_features = np.array(row0[1:6], dtype=np.float32)
 
         # 5개 LOD 각각 fps, LOD가 기록됨
-        # chunk 예: columns = [scene_id, feat1, feat2, feat3, feat4, feat5, fps_LOD?, LOD?]
-        # col index:
-        #   0 => SceneID
-        #   1..5 => feat
-        #   6 => 1/fps
-        #   7 => LOD
-        #   8 => PSNR
-        lod_list = chunk.iloc[:, 7].values  # array([1,2,3,4,5])
-        fps_list = chunk.iloc[:, 6].values  # array([... 5개 ...])
+        # 행마다 형태는 [scene_id, feat1, feat2, feat3, feat4, feat5, fps_LOD?, LOD?, PSNR?]
+        lod_list = chunk.iloc[:, 7].values 
+        fps_list = chunk.iloc[:, 6].values 
         psnr_list = chunk.iloc[:, 8].values
-        print(lod_list)
-        print(fps_list)
-        print(psnr_list)
-        input()
-
-        # 각 LOD별 PSNR, FPS를 이용해 score 계산 -> best LOD 찾기
-        for i in range(5):
-            lod_val = lod_list[i]       # 1..5
-            fps_val = float(fps_list[i])
-
-        # psnr_list, fps_list 길이=5
-        # 정규화 위해 각각의 최대값 구함
-        max_fps = max(fps_list)
-        max_psnr = max(psnr_list)
 
         best_score = -9999.0
         best_lod = None
@@ -114,10 +87,7 @@ class LODBiasChunkDataset(Dataset):
                 best_score = score_i
                 best_lod = lod_list[i]
 
-        # label = best_lod - basis_lod
-        label = ((float(best_lod))-3.0)/4 ##normalize -> [0,1]
-
-        # Tensor 변환
+        label = float(best_lod) 
         x_tensor = torch.tensor(x_features, dtype=torch.float32)
         y_tensor = torch.tensor(label, dtype=torch.float32)
         return x_tensor, y_tensor
@@ -150,7 +120,7 @@ class LODBiasModel(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Linear(128, 16)
+            nn.Linear(128, 5)
         )
 
         # Layer 2: except num_tri
@@ -168,7 +138,7 @@ class LODBiasModel(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, 4)
+            nn.Linear(32, 2)
         )
 
         # Layer 4: Mem and Matiral
@@ -177,24 +147,24 @@ class LODBiasModel(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, 4)
+            nn.Linear(32, 2)
         )
         #Layer 5: Output Layer
         self.net_out = nn.Sequential(
             nn.Sigmoid(),
-            nn.Linear(28, 256),
+            nn.Linear(13, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
             nn.Linear(256, 1),
-            nn.Tanh()
+            nn.Sigmoid()
         )
 
     def forward(self, x):
         x_all = x
-        x_DBMM = nn.concat(x[:2], x[3:])
-        x_DB = x[:2]
-        x_MM = x[3:]
+        x_DB = x[:, :2]
+        x_MM = x[:, 3:]
+        x_DBMM = torch.cat([x_DB, x_MM], dim=1)
 
         x_all_ = self.net_all(x_all)
         x_all_ = x_all_ + x_all
@@ -205,9 +175,9 @@ class LODBiasModel(nn.Module):
         x_MM_ = self.net_MatMem(x_MM)
         x_MM_ = x_MM_ + x_MM
 
-        x_out = nn.concat(x_all_, x_DBMM_, x_DB_, x_MM_)
+        x_out = torch.cat([x_all_, x_DBMM_, x_DB_, x_MM_], dim=1)
         x_out = self.net_out(x_out)
-        x_out = 2*x_out
+        x_out = 5*x_out
 
         return x_out
 
@@ -217,12 +187,10 @@ class LODBiasModel(nn.Module):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # CSV 예: data.csv
-    #   feature1 feature2 feature3 feature4 feature5 1/fps  LOD PSNR
-    #   같은 feature에 LOD다른버전 5개 행에 연속으로 존재
+    # feature1 feature2 feature3 feature4 feature5 1/fps LOD PSNR
+    # 같은 feature에 LOD다른버전 5개 행에 연속으로 존재
     csv_path = os.path.join(args.data_path, args.csv_name)
 
-    # LOD별 디렉토리, GT 디렉토리
     lod_dirs = {
         1: "LOD1",
         2: "LOD2",
@@ -237,12 +205,10 @@ if __name__ == "__main__":
         lod_root_dirs=lod_dirs,
         gt_root_dir=gt_dir,
         alpha=args.PSNR_ratio,
-        beta=1-args.PSNR_ratio,
-        basis_lod=3,
-        use_lod1_as_gt=True  # True로 하면 LOD1 이미지를 GT로 사용
+        beta=1-args.PSNR_ratio
     )
 
-    print("Number of scenes:", len(dataset))  # CSV 길이/5
+    print("Number of scenes:", len(dataset))
 
     # train/val split
     train_size = int(len(dataset)*0.7)
@@ -291,7 +257,7 @@ if __name__ == "__main__":
         avg_val_loss = total_val_loss / len(val_loader.dataset)
 
         print(f"[Epoch {epoch}/{num_epochs}] Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
-        
+
     model.eval()
     total_test_loss = 0.0
     with torch.no_grad():
@@ -309,8 +275,11 @@ if __name__ == "__main__":
         for i, (x, y) in enumerate(test_loader):
             x = x.to(device)
             pred = model(x).squeeze()
-            print("예측값:", pred[:5].cpu().numpy(), "실제 LOD값:", y[:5].numpy())
+            print("예측값:", pred.cpu().numpy(), "실제 LOD값:", y.numpy())
             if i == 0:
                 break
             
-    torch.save(model.state_dict(), os.path.join(args.data_path, "/model.pth"))
+    #torch.save(model.state_dict(), os.path.join(args.data_path, "model.pth"))
+    #traced_script_module = torch.jit.trace(model, torch.rand(1, 5, device=device))
+    #traced_script_module.save(os.path.join(args.data_path, "model_script.pt"))
+    torch.onnx.export(model, torch.rand(1, 5, device=device), "model.onnx", input_names=['input'], output_names=['output']) # UE inference를 위해 onnx로 저장

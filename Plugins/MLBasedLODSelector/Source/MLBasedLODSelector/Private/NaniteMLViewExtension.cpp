@@ -14,6 +14,7 @@
 #include "IImageWrapperModule.h"
 #include "CaptureActor.h"
 
+
 void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamily)
 {
     UWorld* World = InViewFamily.Scene ? InViewFamily.Scene->GetWorld() : nullptr;
@@ -33,65 +34,21 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         ViewInfo.FOV = SceneView->FOV;
     }
 
-    float DeltaTime = InViewFamily.Time.GetDeltaRealTimeSeconds();
-    float TotalTime = InViewFamily.Time.GetRealTimeSeconds();
-
-    if (int(TotalTime) % 5 == 1)
+    // 액터 순회
+    for (TActorIterator<AActor> It(World); It; ++It)
     {
-        //CaptureActor.CaptureAndLogMultipleLOD();
-        // 다중 LOD로 화면 출력 저장
-        TArray<AActor*> AllActors;
-        UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
-
-        int32 MaxLOD = 5;
-        for (int32 LODIndex = 0; LODIndex < MaxLOD; LODIndex++)
+        AActor* Actor = *It;
+        if (!Actor)
         {
-            for (AActor* Actor : AllActors)
-            {
-                if (UStaticMeshComponent* SMC = Actor->FindComponentByClass<UStaticMeshComponent>())
-                {
-                    SMC->SetForcedLodModel(LODIndex + 1);
-                }
-            }
-
-            // 액터 순회
-            for (TActorIterator<AActor> It(World); It; ++It)
-            {
-                AActor* Actor = *It;
-                if (!Actor)
-                {
-                    continue;
-                }
-
-                int32 LodBias = 0;
-                // ML inference
-                UNaniteMLManager::Get().RunInferenceForActor(
-                    Actor,
-                    ViewInfo,
-                    World,
-                    LodBias,
-                    TotalTime
-                );
-                // LOD bias 아직 미구현
-                TArray<UPrimitiveComponent*> PrimComps;
-                Actor->GetComponents(PrimComps);
-
-                for (UPrimitiveComponent* Comp : PrimComps)
-                {
-                    if (UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(Comp))
-                    {
-                        if (LodBias > 0)
-                        {
-                            SMC->ForcedLodModel = LodBias;
-                        }
-                        else
-                        {
-                            SMC->ForcedLodModel = 0; // 0 = no force
-                        }
-                    }
-                }
-            }
+            continue;
         }
+
+        // ML inference
+        UNaniteMLManager::Get().RunInferenceForActor(
+            Actor,
+            ViewInfo,
+            World
+        );
     }
 }
 

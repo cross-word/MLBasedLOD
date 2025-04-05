@@ -14,3 +14,6 @@ LODPlugin.sln
 LODPlugin.uproject
 /Plugins/tempPlugin
 /Plugins/MLBasedNaniteExtend
+/PythonAPI/model.onnx
+/PythonAPI/python
+/PythonAPI/save_0.pth

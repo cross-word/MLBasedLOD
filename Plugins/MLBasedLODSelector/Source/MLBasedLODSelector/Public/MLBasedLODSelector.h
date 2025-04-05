@@ -6,7 +6,7 @@
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 
-class FMLBasedLODSelectorModule : public IModuleInterface
+class IMLBasedLODSelectorModule : public IModuleInterface
 {
 public:
     virtual void StartupModule() override;

@@ -34,7 +34,8 @@
             "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\intermediate\\build\\win64\\unrealeditor\\inc\\mlbasedlodselector\\uht\\datalogger.generated.h",
             "d:\\ue_5.5\\engine\\source\\runtime\\engine\\classes\\camera\\cameracomponent.h",
             "d:\\ue_5.5\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\cameracomponent.generated.h",
-            "d:\\ue_5.5\\engine\\source\\runtime\\engine\\public\\editorsupportdelegates.h"
+            "d:\\ue_5.5\\engine\\source\\runtime\\engine\\public\\editorsupportdelegates.h",
+            "d:\\unreal_project\\lodplugin\\plugins\\mlbasedlodselector\\source\\mlbasedlodselector\\public\\mlinferencehelper.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

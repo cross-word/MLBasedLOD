@@ -30,12 +30,12 @@ struct Z_Construct_UClass_UNaniteMLManager_Statics
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Class_MetaDataParams[] = {
 #if !UE_BUILD_SHIPPING
-		{ "Comment", "/**\n * \xea\xb0\x84\xeb\x8b\xa8\xed\x95\x9c UObject \xec\x8b\xb1\xea\xb8\x80\xed\x84\xb4 \xec\x8a\xa4\xed\x83\x80\xec\x9d\xbc \xeb\xa7\xa4\xeb\x8b\x88\xec\xa0\x80:\n * - ML \xeb\xaa\xa8\xeb\x8d\xb8 \xeb\xa1\x9c\xeb\x93\x9c/\xec\x96\xb8\xeb\xa1\x9c\xeb\x93\x9c\n * - \xeb\xa7\xa4 \xed\x94\x84\xeb\xa0\x88\xec\x9e\x84 \xec\x9d\xb8\xed\x8d\xbc\xeb\x9f\xb0\xec\x8a\xa4(Stub or Real)\n */" },
+		{ "Comment", "/*\n  onnxruntime\xec\x9c\xbc\xeb\xa1\x9c ML\xeb\xaa\xa8\xeb\x8d\xb8 \xeb\xa1\x9c\xeb\x93\x9c/\xec\x96\xb8\xeb\xa1\x9c\xeb\x93\x9c\n  \xeb\xa7\xa4 \xed\x94\x84\xeb\xa0\x88\xec\x9e\x84 \xeb\xaa\xa8\xeb\x8d\xb8\xec\x97\x90 inference\xed\x95\x98\xec\x97\xac \xec\x95\xa1\xed\x84\xb0\xeb\xa7\x88\xeb\x8b\xa4 LOD\xeb\xa5\xbc \xea\xb3\x84\xec\x82\xb0 \xed\x9b\x84 LOD\xea\xb0\x95\xec\xa0\x9c\n */" },
 #endif
 		{ "IncludePath", "NaniteMLManager.h" },
 		{ "ModuleRelativePath", "Public/NaniteMLManager.h" },
 #if !UE_BUILD_SHIPPING
-		{ "ToolTip", "\xea\xb0\x84\xeb\x8b\xa8\xed\x95\x9c UObject \xec\x8b\xb1\xea\xb8\x80\xed\x84\xb4 \xec\x8a\xa4\xed\x83\x80\xec\x9d\xbc \xeb\xa7\xa4\xeb\x8b\x88\xec\xa0\x80:\n- ML \xeb\xaa\xa8\xeb\x8d\xb8 \xeb\xa1\x9c\xeb\x93\x9c/\xec\x96\xb8\xeb\xa1\x9c\xeb\x93\x9c\n- \xeb\xa7\xa4 \xed\x94\x84\xeb\xa0\x88\xec\x9e\x84 \xec\x9d\xb8\xed\x8d\xbc\xeb\x9f\xb0\xec\x8a\xa4(Stub or Real)" },
+		{ "ToolTip", "onnxruntime\xec\x9c\xbc\xeb\xa1\x9c ML\xeb\xaa\xa8\xeb\x8d\xb8 \xeb\xa1\x9c\xeb\x93\x9c/\xec\x96\xb8\xeb\xa1\x9c\xeb\x93\x9c\n\xeb\xa7\xa4 \xed\x94\x84\xeb\xa0\x88\xec\x9e\x84 \xeb\xaa\xa8\xeb\x8d\xb8\xec\x97\x90 inference\xed\x95\x98\xec\x97\xac \xec\x95\xa1\xed\x84\xb0\xeb\xa7\x88\xeb\x8b\xa4 LOD\xeb\xa5\xbc \xea\xb3\x84\xec\x82\xb0 \xed\x9b\x84 LOD\xea\xb0\x95\xec\xa0\x9c" },
 #endif
 	};
 #endif // WITH_METADATA
@@ -86,10 +86,10 @@ UNaniteMLManager::~UNaniteMLManager() {}
 struct Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_NaniteMLManager_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UNaniteMLManager, UNaniteMLManager::StaticClass, TEXT("UNaniteMLManager"), &Z_Registration_Info_UClass_UNaniteMLManager, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UNaniteMLManager), 1768931631U) },
+		{ Z_Construct_UClass_UNaniteMLManager, UNaniteMLManager::StaticClass, TEXT("UNaniteMLManager"), &Z_Registration_Info_UClass_UNaniteMLManager, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UNaniteMLManager), 3159724521U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_NaniteMLManager_h_3997118360(TEXT("/Script/MLBasedLODSelector"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_NaniteMLManager_h_3526234630(TEXT("/Script/MLBasedLODSelector"),
 	Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_NaniteMLManager_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_unreal_project_LODPlugin_Plugins_MLBasedLODSelector_Source_MLBasedLODSelector_Public_NaniteMLManager_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

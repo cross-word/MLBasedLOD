@@ -6,147 +6,56 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "DataLogger.h"
+#include "CaptureActor.h"
+#include "MLInferenceHelper.h"
+
 UNaniteMLManager& UNaniteMLManager::Get()
 {
     static UNaniteMLManager* Singleton = NewObject<UNaniteMLManager>();
+    Singleton->AddToRoot();
     return *Singleton;
 }
 
 void UNaniteMLManager::InitializeModel()
 {
-    // 모델 로드용
+    EnvInstance = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ONNXModel");
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+
+    //임시 하드코딩
+    const wchar_t* model_path = L"D:\\unreal_project\\LODPlugin\\PythonAPI\\model.onnx";
+
+    try {
+        ModelSession = new Ort::Session(*EnvInstance, model_path, session_options);
+    }
+    catch (const Ort::Exception&) {
+        return;
+    }
 }
 
 void UNaniteMLManager::ShutdownModel()
 {
-    // 모델 자원 해제용
+    ModelSession = nullptr;
+    if (EnvInstance != nullptr) delete EnvInstance;
 }
-/*
-float GetActorScreenSize(AActor* TargetActor, UWorld* World)
-{
-    if (!TargetActor || !GEngine->GetFirstLocalPlayerController(World))
-    {
-        return 0.0f;
-    }
-
-    FVector Origin;
-    FVector BoxExtent;
-
-    // 1. 액터의 바운딩 박스(경계 상자) 가져오기
-    TargetActor->GetActorBounds(true, Origin, BoxExtent);
-
-    // 2. 바운딩 박스의 코너 좌표 계산 (8개의 코너)
-    TArray<FVector> BoxCorners;
-    BoxCorners.Add(Origin + FVector(-BoxExtent.X, -BoxExtent.Y, -BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(BoxExtent.X, -BoxExtent.Y, -BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(-BoxExtent.X, BoxExtent.Y, -BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(BoxExtent.X, BoxExtent.Y, -BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(-BoxExtent.X, -BoxExtent.Y, BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(BoxExtent.X, -BoxExtent.Y, BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(-BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
-    BoxCorners.Add(Origin + FVector(BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
-
-    FVector2D MinScreenPos(FLT_MAX, FLT_MAX);
-    FVector2D MaxScreenPos(-FLT_MAX, -FLT_MAX);
-    FVector2D ScreenPosition;
-
-    // 3. 3D 공간 좌표를 화면 좌표로 변환
-    for (const FVector& Corner : BoxCorners)
-    {
-        if (GEngine->GetFirstLocalPlayerController(World)->ProjectWorldLocationToScreen(Corner, ScreenPosition))
-        {
-            MinScreenPos.X = FMath::Min(MinScreenPos.X, ScreenPosition.X);
-            MinScreenPos.Y = FMath::Min(MinScreenPos.Y, ScreenPosition.Y);
-            MaxScreenPos.X = FMath::Max(MaxScreenPos.X, ScreenPosition.X);
-            MaxScreenPos.Y = FMath::Max(MaxScreenPos.Y, ScreenPosition.Y);
-        }
-    }
-    // 4. 화면에서 차지하는 픽셀 크기 계산
-    float ScreenWidth = MaxScreenPos.X - MinScreenPos.X;
-    float ScreenHeight = MaxScreenPos.Y - MinScreenPos.Y;
-    float ScreenSize = (ScreenWidth * ScreenHeight);
-    //FVector2D ScreenViewPoint;
-    //GEngine->GameViewport->GetViewportSize(ScreenViewPoint);
-    //float ScreenRatio = (ScreenWidth * ScreenHeight) / (ScreenViewPoint.X * ScreenViewPoint.Y);
-
-    return ScreenSize;
-}
-
-float GetNumTriangle(AActor* Actor)
-{
-    float NumTriangle = 0.0f;
-    TArray<UStaticMeshComponent*> Components;
-    Actor->GetComponents<UStaticMeshComponent>(Components);
-    if (Components.IsEmpty())
-    {
-        return NumTriangle;
-    }
-
-    for (int32 i = 0; i < Components.Num(); i++)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Components[i];
-        UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
-        NumTriangle += StaticMesh->GetNumTriangles(2);
-    }
-    return NumTriangle;
-}
-
-float GetNumMaterial(AActor* Actor)
-{
-    float NumMaterial = 0.0f;
-    TArray<UStaticMeshComponent*> Components;
-    Actor->GetComponents<UStaticMeshComponent>(Components);
-    if (Components.IsEmpty())
-    {
-        return NumMaterial;
-    }
-
-    for (int32 i = 0; i < Components.Num(); i++)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Components[i];
-        UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
-        NumMaterial += StaticMesh->GetStaticMaterials().Num();
-    }
-    return NumMaterial;
-}
-
-float GetMemoryUsage(AActor* Actor)
-{
-    float NumMaterial = 0.0f;
-    TArray<UStaticMeshComponent*> Components;
-    Actor->GetComponents<UStaticMeshComponent>(Components);
-    if (Components.IsEmpty())
-    {
-        return NumMaterial;
-    }
-
-    for (int32 i = 0; i < Components.Num(); i++)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Components[i];
-        UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
-        NumMaterial += StaticMesh->GetResourceSizeBytes(EResourceSizeMode::Type::EstimatedTotal);
-    }
-    return NumMaterial;
-}
-*/
 
 /*
   입력 Actor를 바탕으로 모델 inference
   모델 input : Distance, ScreenBound, NumTriangle, NumMatrial, MemoryUsage
-  모델 output : LOD bias
+  모델 output : LOD Level
 */
 void UNaniteMLManager::RunInferenceForActor(
     AActor* Actor,
     const FMinimalViewInfo& ViewInfo,
-    UWorld* World,
-    int32& LodBias,
-    float fps
+    UWorld* World
 )
 {
+    return;
     if (!Actor || !GEngine->GetFirstLocalPlayerController(World))
     {
         return;
     }
+    if (ModelSession == nullptr) return;
 
     TArray<UPrimitiveComponent*> PrimitiveComps;
     Actor->GetComponents<UPrimitiveComponent>(PrimitiveComps);
@@ -165,46 +74,58 @@ void UNaniteMLManager::RunInferenceForActor(
         return;
     }
 
-
-    // camera distance
-    FVector ActorLocation = Actor->GetActorLocation();
-    FVector CameraLocation = ViewInfo.Location;
-    float Distance = FVector::Dist(ActorLocation, CameraLocation);
-
-    //학습후 재개
-    /*
-    // bound
-    float ScreenBound = GetActorScreenSize(Actor, World);
-
-    // polygon
-    float NumTriangle = GetNumTriangle(Actor);
-
-    // material
-    float NumMatrial = GetNumMaterial(Actor);
-
-    // memory usage
-    float MemoryUsage = GetMemoryUsage(Actor);
+    //input 데이터 준비
+    std::vector<float>* InputData;
+    UMLInferenceHelper::Get().PreProcessActor(InputData, Actor, World);
     
-    //mesh name (일단 취소)
-    //FString ActorName = Actor->FindComponentByClass<UPrimitiveComponent>()->GetFNameForStatID().ToString();
+    std::vector<int64_t> input_shape = { 1, 5 };
+    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
+        memory_info,
+        InputData->data(),
+        InputData->size(),
+        input_shape.data(),
+        input_shape.size()
+    );
+    const char* input_names[] = { "input" };
+    const char* output_names[] = { "output" };
+    float* output_data;
 
-    //input vector
-    TArray<float> InputData;
-    InputData.Add(Distance);
-    InputData.Add(ScreenBound);
-    InputData.Add(NumTriangle);
-    InputData.Add(NumMatrial);
-    InputData.Add(MemoryUsage);
-    */
+    //model inference
+    try {
+        auto output_tensors = ModelSession->Run(Ort::RunOptions{ nullptr },
+            input_names, &input_tensor, 1,
+            output_names, 1);
 
-    //model inference 아직 미구현
-    float LodBiasPred = 0.0f; // -2 ~ +2 사이 예측값
+        output_data = output_tensors.front().GetTensorMutableData<float>();
+    }
+    catch (const Ort::Exception&) {
+        return;
+    }
 
-    float CullThreshold = 0.5f;
-    LodBias = FMath::Clamp(FMath::RoundToInt(LodBiasPred), -2, 2);
+    int LODIndex = FMath::Clamp(FMath::RoundToInt(*output_data), 1, 5);
+    if (UStaticMeshComponent* SMC = Actor->FindComponentByClass<UStaticMeshComponent>())
+    {
+        TArray<UStaticMeshComponent*> StaticMeshComponents;
+        Actor->GetComponents<UStaticMeshComponent>(StaticMeshComponents);
+        for (UStaticMeshComponent* StaticComp : StaticMeshComponents)
+        {
+            if (StaticComp)
+            {
+                StaticComp->SetForcedLodModel(LODIndex);
+            }
+        }
+    }
+    if (USkeletalMeshComponent* SkMC = Actor->FindComponentByClass<USkeletalMeshComponent>())
+    {
+        TArray<USkeletalMeshComponent*> SkelMeshComponents;
+        Actor->GetComponents<USkeletalMeshComponent>(SkelMeshComponents);
+        for (USkeletalMeshComponent* SkelComp : SkelMeshComponents)
+        {
+            if (SkelComp)
+            {
+                SkelComp->SetForcedLOD(LODIndex);
+            }
+        }
+    }
 }
-
-
-/*
-TODO : 모델 학습 후 inference구현
-*/

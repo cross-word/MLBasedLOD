@@ -8,23 +8,24 @@
 #include "Modules/ModuleManager.h"
 #include "Engine/Engine.h"
 
-IMPLEMENT_MODULE(FMLBasedLODSelectorModule, FMLBasedLODSelector)
+IMPLEMENT_MODULE(IMLBasedLODSelectorModule, IMLBasedLODSelector)
 
-void FMLBasedLODSelectorModule::StartupModule()
+void IMLBasedLODSelectorModule::StartupModule()
 {
-    //GEngine 초기화 후 시행
-    PostEngineInitHandle = FCoreDelegates::OnPostEngineInit.AddRaw(this, &FMLBasedLODSelectorModule::OnPostEngineInit);
+    // GEngine 초기화 후 모듈 시행
+    PostEngineInitHandle = FCoreDelegates::OnPostEngineInit.AddRaw(this, &IMLBasedLODSelectorModule::OnPostEngineInit);
 }
 
-void FMLBasedLODSelectorModule::ShutdownModule()
+void IMLBasedLODSelectorModule::ShutdownModule()
 {
+    // 모듈 퇴장시 관련된 설정 및 메모리 초기화 
     ViewExtension.Reset();
 
     UNaniteMLManager::Get().ShutdownModel();
     FCoreDelegates::OnPostEngineInit.Remove(PostEngineInitHandle);
 }
 
-void FMLBasedLODSelectorModule::OnPostEngineInit()
+void IMLBasedLODSelectorModule::OnPostEngineInit()
 {
     if (GEngine)
     {
