@@ -1,5 +1,5 @@
-Plugins/MLBasedLODSelector/Binaries/*
-Plugins/MLBasedLODSelector/Intermediate/*
+Plugins/MLBasedLODSelector/Binaries
+Plugins/MLBasedLODSelector/Intermediate
 /.vs
 /Binaries
 /Config
@@ -17,3 +17,6 @@ LODPlugin.uproject
 /PythonAPI/model.onnx
 /PythonAPI/python
 /PythonAPI/save_0.pth
+Plugins/MLBasedLODSelector/Binaries/*
+Plugins/MLBasedLODSelector/Intermediate/*
+Plugins/MLBasedLODSelector/ThirdParty/*

@@ -1,9 +1,6 @@
 import os
-import math
-import random
 import pandas as pd
 import numpy as np
-from PIL import Image
 
 import torch
 import torch.nn as nn
@@ -113,52 +110,84 @@ class LODBiasModel(nn.Module):
         input_dim_DistBoundMatMem = 4
         input_dim_DistBound = 2
         input_dim_MatMem = 2
+        dropout_rate = 0.2
 
         # Layer 1: all feature
         self.net_all = nn.Sequential(
             nn.Linear(input_dim_all, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(128, 5)
         )
 
         # Layer 2: except num_tri
         self.net_DistBoundMatMem = nn.Sequential(
             nn.Linear(input_dim_DistBoundMatMem, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(64, 4)
         )
 
         # Layer 3: Dist and Bound
         self.net_DistBound = nn.Sequential(
             nn.Linear(input_dim_DistBound, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(64, 32),
+            nn.BatchNorm1d(32),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(32, 2)
         )
 
         # Layer 4: Mem and Matiral
         self.net_MatMem = nn.Sequential(
             nn.Linear(input_dim_MatMem, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(64, 32),
+            nn.BatchNorm1d(32),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(32, 2)
         )
         #Layer 5: Output Layer
         self.net_out = nn.Sequential(
-            nn.Sigmoid(),
             nn.Linear(13, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(256, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(256, 1),
             nn.Sigmoid()
         )
+
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, (nn.BatchNorm1d, nn.LayerNorm)):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         x_all = x
@@ -177,7 +206,7 @@ class LODBiasModel(nn.Module):
 
         x_out = torch.cat([x_all_, x_DBMM_, x_DB_, x_MM_], dim=1)
         x_out = self.net_out(x_out)
-        x_out = 5*x_out
+        x_out = 5 * x_out
 
         return x_out
 
@@ -222,7 +251,8 @@ if __name__ == "__main__":
 
     model = LODBiasModel()
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.95)
 
     model.to(device)
 
@@ -243,6 +273,7 @@ if __name__ == "__main__":
 
             total_train_loss += loss.item() * x_batch.size(0)
         avg_train_loss = total_train_loss / len(train_loader.dataset)
+        scheduler.step()
 
         # Validation
         model.eval()

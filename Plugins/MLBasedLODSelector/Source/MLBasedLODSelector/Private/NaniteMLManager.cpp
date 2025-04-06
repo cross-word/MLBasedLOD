@@ -23,7 +23,7 @@ void UNaniteMLManager::InitializeModel()
     session_options.SetIntraOpNumThreads(1);
 
     //임시 하드코딩
-    const wchar_t* model_path = L"D:\\unreal_project\\LODPlugin\\PythonAPI\\model.onnx";
+    const wchar_t* model_path = L"D:\\unreal_project\\SimpleShooter\\PythonAPI\\model.onnx";
 
     try {
         ModelSession = new Ort::Session(*EnvInstance, model_path, session_options);
@@ -50,12 +50,14 @@ void UNaniteMLManager::RunInferenceForActor(
     UWorld* World
 )
 {
-    return;
     if (!Actor || !GEngine->GetFirstLocalPlayerController(World))
     {
         return;
     }
-    if (ModelSession == nullptr) return;
+    if (ModelSession == nullptr)
+    {
+        return;
+    }
 
     TArray<UPrimitiveComponent*> PrimitiveComps;
     Actor->GetComponents<UPrimitiveComponent>(PrimitiveComps);
@@ -112,6 +114,7 @@ void UNaniteMLManager::RunInferenceForActor(
         {
             if (StaticComp)
             {
+                UE_LOG(LogTemp, Warning, TEXT("MODEL CHANGED LOD!!"));
                 StaticComp->SetForcedLodModel(LODIndex);
             }
         }
@@ -124,6 +127,7 @@ void UNaniteMLManager::RunInferenceForActor(
         {
             if (SkelComp)
             {
+                UE_LOG(LogTemp, Warning, TEXT("MODEL CHANGED LOD!!"));
                 SkelComp->SetForcedLOD(LODIndex);
             }
         }

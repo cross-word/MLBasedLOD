@@ -33,7 +33,6 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         ViewInfo.Rotation = SceneView->ViewRotation;
         ViewInfo.FOV = SceneView->FOV;
     }
-
     // 액터 순회
     for (TActorIterator<AActor> It(World); It; ++It)
     {
@@ -42,12 +41,7 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         {
             continue;
         }
-
         // ML inference
         UNaniteMLManager::Get().RunInferenceForActor(Actor, ViewInfo, World);
     }
 }
-
-/*
-TODO : log모드 / 추론모드 구별 , LOD Bias 구현
-*/
