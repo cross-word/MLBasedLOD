@@ -9,10 +9,10 @@
 			"PerModuleInline.gen.cpp.obj",
 			"CaptureActor.cpp.obj",
 			"DataLogger.cpp.obj",
-			"MLInferenceHelper.cpp.obj",
 			"MLBasedLODSelector.cpp.obj",
-			"NaniteMLManager.cpp.obj",
-			"NaniteMLViewExtension.cpp.obj"
+			"MLInferenceHelper.cpp.obj",
+			"NaniteMLViewExtension.cpp.obj",
+			"NaniteMLManager.cpp.obj"
 		]
 	}
 }

@@ -287,7 +287,7 @@
 /I "..\Intermediate\Build\Win64\UnrealEditor\Inc\AnimationEditMode\UHT"
 /I "Editor\AnimationEditMode\Public"
 /I "D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Intermediate\Build\Win64\UnrealEditor\Inc\MLBasedLODSelector\UHT"
-/I "D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\ThirdParty\onnxruntime-win-x64-1.20.1\include"
+/I "D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\ThirdParty\onnxruntime-win-x64-gpu-1.20.1\include"
 /I "D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Source"
 /I "D:\unreal_project\LODPlugin\Plugins\MLBasedLODSelector\Source\MLBasedLODSelector\Public"
 /external:W0

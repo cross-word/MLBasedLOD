@@ -8,7 +8,7 @@ public class MLBasedLODSelector : ModuleRules
 	public MLBasedLODSelector(ReadOnlyTargetRules Target) : base(Target)
 	{
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-        string ONNXRuntimePath = Path.Combine(ModuleDirectory, "..\\..\\ThirdParty\\onnxruntime-win-x64-1.20.1");
+        string ONNXRuntimePath = Path.Combine(ModuleDirectory, "..\\..\\ThirdParty\\onnxruntime-win-x64-gpu-1.20.1");
 
         PublicAdditionalLibraries.Add(Path.Combine(ONNXRuntimePath, "lib", "onnxruntime.lib"));
         RuntimeDependencies.Add(Path.Combine(ONNXRuntimePath, "lib", "onnxruntime.dll"));

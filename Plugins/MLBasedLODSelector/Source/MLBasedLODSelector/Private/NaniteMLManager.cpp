@@ -13,7 +13,8 @@ void UNaniteMLManager::InitializeModel()
 {
     EnvInstance = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ONNXModel");
     Ort::SessionOptions session_options;
-    session_options.SetIntraOpNumThreads(1);
+    //session_options.SetIntraOpNumThreads(1);
+    OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, 0);
 
     //임시 하드코딩
     const wchar_t* model_path = L"D:\\unreal_project\\SimpleShooter\\PythonAPI\\model.onnx";
