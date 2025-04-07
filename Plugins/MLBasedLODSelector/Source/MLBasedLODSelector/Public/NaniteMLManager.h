@@ -15,7 +15,6 @@ class MLBASEDLODSELECTOR_API UNaniteMLManager : public UObject
     GENERATED_BODY()
 
 public:
-    static UNaniteMLManager& Get();
     void InitializeModel();
     void ShutdownModel();
 

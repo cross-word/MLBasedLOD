@@ -1,19 +1,7 @@
 #include "NaniteMLViewExtension.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
-#include "GameFramework/Actor.h"
-#include "Components/PrimitiveComponent.h"
-#include "NaniteMLManager.h"
-#include "Camera/CameraTypes.h"
-#include "DataLogger.h"
-#include "Kismet/GameplayStatics.h"
-#include "UObject/Object.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
-#include "IImageWrapper.h"
-#include "IImageWrapperModule.h"
-#include "CaptureActor.h"
-
+#include "MLBasedLODSelector.h"
 
 void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamily)
 {
@@ -42,6 +30,6 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
             continue;
         }
         // ML inference
-        UNaniteMLManager::Get().RunInferenceForActor(Actor, ViewInfo, World);
+        IMLBasedLODSelectorModule::GetMLManager()->RunInferenceForActor(Actor, ViewInfo, World);
     }
 }

@@ -9,13 +9,6 @@
 #include "CaptureActor.h"
 #include "MLInferenceHelper.h"
 
-UNaniteMLManager& UNaniteMLManager::Get()
-{
-    static UNaniteMLManager* Singleton = NewObject<UNaniteMLManager>();
-    Singleton->AddToRoot();
-    return *Singleton;
-}
-
 void UNaniteMLManager::InitializeModel()
 {
     EnvInstance = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ONNXModel");
@@ -36,7 +29,6 @@ void UNaniteMLManager::InitializeModel()
 void UNaniteMLManager::ShutdownModel()
 {
     ModelSession = nullptr;
-    if (EnvInstance != nullptr) delete EnvInstance;
 }
 
 /*
