@@ -2,12 +2,10 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
-#include "Camera/CameraTypes.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
-#include "DataLogger.h"
-#include "CaptureActor.h"
 #include "MLInferenceHelper.h"
+#include "EngineUtils.h"
 
 void UNaniteMLManager::InitializeModel()
 {
@@ -25,55 +23,113 @@ void UNaniteMLManager::InitializeModel()
     catch (const Ort::Exception&) {
         return;
     }
+
+    //프레임(시간) 계산및 모델 inference 자원 업데이트용 Tick
+    if (GEngine)
+    {
+        TickHandle = FTSTicker::GetCoreTicker().AddTicker(
+            FTickerDelegate::CreateUObject(this, &UNaniteMLManager::TickInference)
+        );
+    }
 }
 
 void UNaniteMLManager::ShutdownModel()
 {
     ModelSession = nullptr;
+
+    FTSTicker::GetCoreTicker().RemoveTicker(TickHandle);
+    if (EnvInstance)
+    {
+        delete EnvInstance;
+        EnvInstance = nullptr;
+    }
+}
+
+void UNaniteMLManager::UpdateCameraInfo(UWorld* InWorld, const FMinimalViewInfo& InViewInfo)
+{
+    CachedWorld = InWorld;
+    CachedViewInfo = InViewInfo;
 }
 
 /*
-  입력 Actor를 바탕으로 모델 inference
-  모델 input : Distance, ScreenBound, NumTriangle, NumMatrial, MemoryUsage
-  모델 output : LOD Level
+  틱마다 시간 계산하여 LOD계산할지말지 정하는 함수
+  또한 계산해야하면 액터가 실제로 보이는 액터들만 모아서 함수에 넘겨줌
 */
-void UNaniteMLManager::RunInferenceForActor(
-    AActor* Actor,
-    const FMinimalViewInfo& ViewInfo,
-    UWorld* World
-)
+bool UNaniteMLManager::TickInference(float DeltaTime)
 {
-    if (!Actor || !GEngine->GetFirstLocalPlayerController(World))
+    TimeAccumulator += DeltaTime;
+    if (TimeAccumulator < InferenceInterval)
     {
-        return;
+        return true;
     }
+    TimeAccumulator = 0.0f;
+
     if (ModelSession == nullptr)
     {
-        return;
+        return true;
     }
 
-    TArray<UPrimitiveComponent*> PrimitiveComps;
-    Actor->GetComponents<UPrimitiveComponent>(PrimitiveComps);
-    bool NoVisibleComponent = true;
-
-    for (UPrimitiveComponent* Comp : PrimitiveComps)
+    TArray<AActor*> VisibleActors;
+    for (TActorIterator<AActor> It(CachedWorld); It; ++It)
     {
-        if (!Comp->bHiddenInGame && Comp->IsVisible())
+        AActor* Actor = *It;
+        if (!Actor) continue;
+
+        bool bVisible = false;
+        TArray<UPrimitiveComponent*> PrimitiveComps;
+        Actor->GetComponents<UPrimitiveComponent>(PrimitiveComps);
+        for (UPrimitiveComponent* Comp : PrimitiveComps)
         {
-            NoVisibleComponent = false;
-            break;
+            if (!Comp->bHiddenInGame && Comp->IsVisible())
+            {
+                bVisible = true;
+                break;
+            }
+        }
+
+        if (bVisible)
+        {
+            VisibleActors.Add(Actor);
         }
     }
-    if (NoVisibleComponent)
+    // 실제로 카메라에 보이는 액터들만 넘겨줌
+    RunInferenceForActors(VisibleActors);
+
+    return true;
+}
+
+/*
+ 액터들을 검사해서 실제로 보이는 액터들만 모아서 inference
+ inference 후 실제로 LOD가 바뀐 액터들만 새로Set
+*/
+void UNaniteMLManager::RunInferenceForActors(const TArray<AActor*>& Actors)
+{
+    UE_LOG(LogTemp, Warning, TEXT("LODFunction Called"));
+    if (Actors.Num() == 0) return;
+    if (ModelSession == nullptr) return;
+
+    //Distance, ScreenBound, NumTriangle, NumMatrial, MemoryUsage 5개feature
+    const int32 InputDim = 5;
+    std::vector<float> InputData;
+    InputData.resize(Actors.Num() * InputDim);
+
+    // 액터별로 PreProcessActor 호출
+    for (int32 i = 0; i < Actors.Num(); i++)
     {
-        return;
+        AActor* Actor = Actors[i];
+        if (!Actor) continue;
+
+        std::vector<float> OneActorInput = UMLInferenceHelper::Get().PreProcessActor(Actor, CachedWorld, CachedViewInfo);
+        // Actor 순서와 모델 input에 맞게 데이터 저장
+        for (int32 j = 0; j < InputDim; j++)
+        {
+            InputData[i * InputDim + j] = OneActorInput[j];
+        }
     }
 
-    //input 데이터 준비
-    std::vector<float> InputData;
-    InputData = UMLInferenceHelper::Get().PreProcessActor(Actor, World, ViewInfo);
-    
-    std::vector<int64_t> input_shape = { 1, 5 };
+    // input Tensor 생성
+    int64_t BatchSize = (int64_t)Actors.Num();
+    std::vector<int64_t> input_shape = { BatchSize, InputDim };
     Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
         memory_info,
@@ -82,47 +138,65 @@ void UNaniteMLManager::RunInferenceForActor(
         input_shape.data(),
         input_shape.size()
     );
+
     const char* input_names[] = { "input" };
     const char* output_names[] = { "output" };
-    float* output_data;
 
-    //model inference
-    try {
-        auto output_tensors = ModelSession->Run(Ort::RunOptions{ nullptr },
+    // inference
+    std::vector<Ort::Value> output_tensors;
+    try
+    {
+        output_tensors = ModelSession->Run(
+            Ort::RunOptions{ nullptr },
             input_names, &input_tensor, 1,
-            output_names, 1);
-
-        output_data = output_tensors.front().GetTensorMutableData<float>();
+            output_names, 1
+        );
     }
-    catch (const Ort::Exception&) {
+    catch (const Ort::Exception& e)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ONNX Runtime Exception: %s"), *FString(e.what()));
         return;
     }
 
-    int LODIndex = FMath::Clamp(FMath::RoundToInt(*output_data), 1, 5);
-    if (UStaticMeshComponent* SMC = Actor->FindComponentByClass<UStaticMeshComponent>())
+    float* output_data = output_tensors.front().GetTensorMutableData<float>();
+
+    // inference 결과 적용
+    // output data는 actor순서대로 LOD가 있을것
+    for (int32 i = 0; i < Actors.Num(); i++)
     {
-        TArray<UStaticMeshComponent*> StaticMeshComponents;
-        Actor->GetComponents<UStaticMeshComponent>(StaticMeshComponents);
-        for (UStaticMeshComponent* StaticComp : StaticMeshComponents)
+        AActor* Actor = Actors[i];
+        if (!Actor) continue;
+
+        //액터의 LOD저장테이블 업데이트
+        float PredLOD = output_data[i];
+        int LODIndex = FMath::Clamp(FMath::RoundToInt(PredLOD), 1, 5);
+        int32* FoundLOD = LastLODMap.Find(Actor);
+        if (!FoundLOD || *FoundLOD != LODIndex)
         {
-            if (StaticComp)
+            // LOD가 변경되었을 때만 실제 SetForcedLOD 호출
+            TArray<UStaticMeshComponent*> StaticMeshComponents;
+            Actor->GetComponents<UStaticMeshComponent>(StaticMeshComponents);
+            for (UStaticMeshComponent* StaticComp : StaticMeshComponents)
             {
-                UE_LOG(LogTemp, Warning, TEXT("MODEL CHANGED LOD!!"));
-                StaticComp->SetForcedLodModel(LODIndex);
+                if (StaticComp)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("LODCHANGED!!"));
+                    StaticComp->SetForcedLodModel(LODIndex);
+                }
             }
-        }
-    }
-    if (USkeletalMeshComponent* SkMC = Actor->FindComponentByClass<USkeletalMeshComponent>())
-    {
-        TArray<USkeletalMeshComponent*> SkelMeshComponents;
-        Actor->GetComponents<USkeletalMeshComponent>(SkelMeshComponents);
-        for (USkeletalMeshComponent* SkelComp : SkelMeshComponents)
-        {
-            if (SkelComp)
+
+            TArray<USkeletalMeshComponent*> SkelMeshComponents;
+            Actor->GetComponents<USkeletalMeshComponent>(SkelMeshComponents);
+            for (USkeletalMeshComponent* SkelComp : SkelMeshComponents)
             {
-                UE_LOG(LogTemp, Warning, TEXT("MODEL CHANGED LOD!!"));
-                SkelComp->SetForcedLOD(LODIndex);
+                if (SkelComp)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("LODCHANGED!!"));
+                    SkelComp->SetForcedLOD(LODIndex);
+                }
             }
+
+            LastLODMap.Add(Actor, LODIndex);
         }
     }
 }

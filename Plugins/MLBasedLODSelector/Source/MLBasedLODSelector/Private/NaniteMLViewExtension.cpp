@@ -30,6 +30,6 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
             continue;
         }
         // ML inference
-        IMLBasedLODSelectorModule::GetMLManager()->RunInferenceForActor(Actor, ViewInfo, World);
+        IMLBasedLODSelectorModule::GetMLManager()->UpdateCameraInfo(World, ViewInfo);
     }
 }
