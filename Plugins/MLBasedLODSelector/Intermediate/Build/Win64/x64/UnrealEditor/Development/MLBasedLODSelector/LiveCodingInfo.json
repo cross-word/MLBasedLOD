@@ -4,13 +4,13 @@
 		"Module.MLBasedLODSelector.cpp.obj": [
 			"CaptureActor.gen.cpp.obj",
 			"DataLogger.gen.cpp.obj",
-			"PerModuleInline.gen.cpp.obj",
-			"CaptureActor.cpp.obj",
-			"DataLogger.cpp.obj",
-			"MLBasedLODSelector.cpp.obj",
-			"MLInferenceHelper.cpp.obj",
 			"MLBasedLODSelector.init.gen.cpp.obj",
 			"NaniteMLManager.gen.cpp.obj",
+			"PerModuleInline.gen.cpp.obj",
+			"DataLogger.cpp.obj",
+			"CaptureActor.cpp.obj",
+			"MLBasedLODSelector.cpp.obj",
+			"MLInferenceHelper.cpp.obj",
 			"NaniteMLManager.cpp.obj",
 			"NaniteMLViewExtension.cpp.obj"
 		]

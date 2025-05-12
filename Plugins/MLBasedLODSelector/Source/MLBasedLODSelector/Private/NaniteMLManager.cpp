@@ -58,43 +58,44 @@ void UNaniteMLManager::UpdateCameraInfo(UWorld* InWorld, const FMinimalViewInfo&
 bool UNaniteMLManager::TickInference(float DeltaTime)
 {
     TimeAccumulator += DeltaTime;
-    if (TimeAccumulator < InferenceInterval)
-    {
-        return true;
-    }
-    TimeAccumulator = 0.0f;
+    if (TimeAccumulator < InferenceInterval) return true;
+    TimeAccumulator = 0.f;
+    if (!ModelSession) return true;
 
-    if (ModelSession == nullptr)
-    {
-        return true;
-    }
+    // ❶  파괴된 항목 정리 & 시야 테스트
+    VisibleSet.Reset();
 
-    TArray<AActor*> VisibleActors;
-    for (TActorIterator<AActor> It(CachedWorld); It; ++It)
-    {
-        AActor* Actor = *It;
-        if (!Actor) continue;
-
-        bool bVisible = false;
-        TArray<UPrimitiveComponent*> PrimitiveComps;
-        Actor->GetComponents<UPrimitiveComponent>(PrimitiveComps);
-        for (UPrimitiveComponent* Comp : PrimitiveComps)
+    //   ‘파괴된 WeakPtr 제거’는 가끔만 하면 되므로 여기서 같이 처리
+    CandidateList.RemoveAll([](const TWeakObjectPtr<AActor>& W)
         {
-            if (!Comp->bHiddenInGame && Comp->IsVisible())
-            {
-                bVisible = true;
-                break;
-            }
-        }
+            return !W.IsValid();
+        });
 
-        if (bVisible)
-        {
-            VisibleActors.Add(Actor);
+    for (const TWeakObjectPtr<AActor>& Weak : CandidateList)
+    {
+        AActor* Actor = Weak.Get();
+        if (!Actor)          continue;                // 이미 파괴 → 무효
+        if (!Actor->WasRecentlyRendered(0.f)) continue; // 이번 프레임 안 보임
+        VisibleSet.Add(Weak);
+    }
+
+    // ② 부하 제한
+    constexpr int32 MaxActorsPerTick = 200;
+    TArray<AActor*> ActorsForML;
+    ActorsForML.Reserve(FMath::Min(MaxActorsPerTick, VisibleSet.Num()));
+
+    int32 Count = 0;
+    for (auto& Weak : VisibleSet)
+    {
+        if (Count >= MaxActorsPerTick) break;
+        if (AActor* A = Weak.Get()) {
+            ActorsForML.Add(A);
+            ++Count;
         }
     }
-    // 실제로 카메라에 보이는 액터들만 넘겨줌
-    RunInferenceForActors(VisibleActors);
 
+    // ❸  추론 실행 (기존 함수 그대로 사용)
+    RunInferenceForActors(ActorsForML);
     return true;
 }
 

@@ -16,7 +16,7 @@
 #include "EditorSupportDelegates.h"
 #include "RenderCommandFence.h"
 #include "MLInferenceHelper.h"
-
+#if WITH_EDITOR
 ACaptureActor& ACaptureActor::Get()
 {
     static ACaptureActor* Singleton = NewObject<ACaptureActor>();
@@ -257,3 +257,4 @@ void ACaptureActor::SaveRenderTargetToDisk(UTextureRenderTarget2D* RT, const FSt
         FFileHelper::SaveArrayToFile(PNGData, *FullFilePath);
     }
 }
+#endif

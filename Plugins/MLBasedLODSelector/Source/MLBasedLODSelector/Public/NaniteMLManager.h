@@ -18,9 +18,14 @@ class MLBASEDLODSELECTOR_API UNaniteMLManager : public UObject
 public:
     void InitializeModel();
     void ShutdownModel();
+    TArray<TWeakObjectPtr<AActor>> CandidateList;   // 등록된 (가능성 있는) 액터
+    TSet<TWeakObjectPtr<AActor>>   VisibleSet;     // 이번 프레임에 보인 액터
 
     void UpdateCameraInfo(UWorld* InWorld, const FMinimalViewInfo& InViewInfo);
     bool TickInference(float DeltaTime);
+
+    void RegisterCandidate(AActor* Actor) { CandidateList.Add(Actor); }
+    void UnregisterCandidate(AActor* Actor) { CandidateList.Remove(Actor); }
 
 private:
     Ort::Env* EnvInstance = nullptr;

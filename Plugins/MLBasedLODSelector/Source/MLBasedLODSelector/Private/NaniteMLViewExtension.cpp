@@ -21,6 +21,8 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         ViewInfo.Rotation = SceneView->ViewRotation;
         ViewInfo.FOV = SceneView->FOV;
     }
+    IMLBasedLODSelectorModule::GetMLManager()->UpdateCameraInfo(World, ViewInfo);
+    /*
     // 액터 순회
     for (TActorIterator<AActor> It(World); It; ++It)
     {
@@ -32,4 +34,5 @@ void FNaniteMLViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamil
         // ML inference
         IMLBasedLODSelectorModule::GetMLManager()->UpdateCameraInfo(World, ViewInfo);
     }
+    */
 }

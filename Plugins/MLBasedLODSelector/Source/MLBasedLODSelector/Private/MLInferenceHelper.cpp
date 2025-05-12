@@ -3,8 +3,8 @@
 
 UMLInferenceHelper& UMLInferenceHelper::Get()
 {
-    static UMLInferenceHelper* Singleton = NewObject<UMLInferenceHelper>();
-    return *Singleton;
+    static UMLInferenceHelper Singleton;
+    return Singleton;
 }
 
 /*
