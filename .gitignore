@@ -17,6 +17,8 @@ LODPlugin.uproject
 /PythonAPI/model.onnx
 /PythonAPI/python
 /PythonAPI/save_0.pth
+/PythonAPI/CSVMaker.py
+/PythonAPI/CSVProfile.py
 Plugins/MLBasedLODSelector/Binaries/*
 Plugins/MLBasedLODSelector/Intermediate/*
 Plugins/MLBasedLODSelector/ThirdParty/*

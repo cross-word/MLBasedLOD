@@ -61,11 +61,10 @@ bool UNaniteMLManager::TickInference(float DeltaTime)
     if (TimeAccumulator < InferenceInterval) return true;
     TimeAccumulator = 0.f;
     if (!ModelSession) return true;
+    if (bJobRunning) return true;
 
-    // ❶  파괴된 항목 정리 & 시야 테스트
+    // 파괴된 항목 정리 & 시야 테스트
     VisibleSet.Reset();
-
-    //   ‘파괴된 WeakPtr 제거’는 가끔만 하면 되므로 여기서 같이 처리
     CandidateList.RemoveAll([](const TWeakObjectPtr<AActor>& W)
         {
             return !W.IsValid();
@@ -74,13 +73,13 @@ bool UNaniteMLManager::TickInference(float DeltaTime)
     for (const TWeakObjectPtr<AActor>& Weak : CandidateList)
     {
         AActor* Actor = Weak.Get();
-        if (!Actor)          continue;                // 이미 파괴 → 무효
-        if (!Actor->WasRecentlyRendered(0.f)) continue; // 이번 프레임 안 보임
+        if (!Actor)          continue; 
+        if (!Actor->WasRecentlyRendered(0.f)) continue; // 이번 프레임 렌더 x
         VisibleSet.Add(Weak);
     }
 
-    // ② 부하 제한
-    constexpr int32 MaxActorsPerTick = 200;
+    // 부하 제한
+    constexpr int32 MaxActorsPerTick = 100;
     TArray<AActor*> ActorsForML;
     ActorsForML.Reserve(FMath::Min(MaxActorsPerTick, VisibleSet.Num()));
 
@@ -94,8 +93,8 @@ bool UNaniteMLManager::TickInference(float DeltaTime)
         }
     }
 
-    // ❸  추론 실행 (기존 함수 그대로 사용)
-    RunInferenceForActors(ActorsForML);
+    //RunInferenceForActors(ActorsForML);
+    StartAsyncInference(ActorsForML);
     return true;
 }
 
@@ -200,4 +199,119 @@ void UNaniteMLManager::RunInferenceForActors(const TArray<AActor*>& Actors)
             LastLODMap.Add(Actor, LODIndex);
         }
     }
+}
+
+void UNaniteMLManager::StartAsyncInference(const TArray<AActor*>&Actors)
+{
+    if (Actors.Num() == 0) return;
+    bJobRunning = true;
+
+    AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask,
+        [this, Actors]()
+        {
+            FInferenceResult Result;
+        
+            constexpr int32 InputDim = 5;
+            std::vector<float> InputData;
+            InputData.resize(Actors.Num() * InputDim);
+        
+            for (int32 i = 0; i < Actors.Num(); ++i)
+            {
+                AActor * Actor = Actors[i];
+                if (!Actor) continue;
+            
+                FCachedMeshStats & StaticStats = GetCachedStats(Actor);
+                FVector ActorLoc = Actor->GetActorLocation();
+                float   Distance = FVector::Dist(ActorLoc, CachedViewInfo.Location);
+                float   ScreenSize = UMLInferenceHelper::Get().GetActorScreenSize(Actor, CachedWorld);
+                InputData[i * InputDim + 0] = Distance;
+                InputData[i * InputDim + 1] = ScreenSize;
+                InputData[i * InputDim + 2] = StaticStats.NumTriangles;
+                InputData[i * InputDim + 3] = StaticStats.NumMaterials;
+                InputData[i * InputDim + 4] = StaticStats.MemoryMB;
+            }
+
+            int64_t Batch = (int64_t)Actors.Num();
+            std::vector<int64_t> Shape = { Batch, InputDim };
+            Ort::MemoryInfo MemInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+            Ort::Value InTensor = Ort::Value::CreateTensor<float>(
+                MemInfo, InputData.data(), InputData.size(), Shape.data(), Shape.size());
+
+            const char* InNames[] = { "input" };
+            const char* OutNames[] = { "output" };
+        
+            std::vector<Ort::Value> Out;
+            try
+            {
+                Out = ModelSession->Run(Ort::RunOptions{ nullptr }, InNames, &InTensor, 1, OutNames, 1);
+            }
+            catch (const Ort::Exception& E)
+            {
+                UE_LOG(LogTemp, Error, TEXT("ONNX Runtime 오류: %s"), *FString(E.what()));
+            }
+
+            float* OutData = Out.empty() ? nullptr : Out.front().GetTensorMutableData<float>();
+        
+            if (OutData)
+            {
+                for (int32 i = 0; i < Actors.Num(); ++i)
+                {
+                    if (AActor* Actor = Actors[i])
+                    {
+                        int32 LODIdx = FMath::Clamp(FMath::RoundToInt(OutData[i]), 1, 5);
+                        Result.NewLODMap.Add(Actor, LODIdx);
+                    }
+                }
+            }
+
+            AsyncTask(ENamedThreads::GameThread,
+                [this, Result = MoveTemp(Result)]() mutable
+                {
+                    for (auto& Pair : Result.NewLODMap)
+                    {
+                        AActor * Actor = Pair.Key.Get();
+                        if (!Actor) continue;
+
+                        int32 NewLOD = Pair.Value;
+                        int32 PrevLOD = LastLODMap.FindRef(Actor);
+                        if (PrevLOD == NewLOD) continue;   // 변동 없으면 스킵
+                
+                        TArray<UStaticMeshComponent*> SMComps;
+                        Actor->GetComponents<UStaticMeshComponent>(SMComps);
+                        for (UStaticMeshComponent* C : SMComps)
+                        if (C) C->SetForcedLodModel(NewLOD);
+
+                        TArray<USkeletalMeshComponent*> SKComps;
+                        Actor->GetComponents<USkeletalMeshComponent>(SKComps);
+                        for (USkeletalMeshComponent* C : SKComps)
+                        if (C) C->SetForcedLOD(NewLOD);
+
+                        LastLODMap.Add(Actor, NewLOD);
+                    }
+
+                    bJobRunning = false;      // 다음 작업 예약 가능
+                });
+        });
+}
+
+FCachedMeshStats & UNaniteMLManager::GetCachedStats(AActor * Actor)
+{
+    FCachedMeshStats * Found = CachedStats.Find(Actor);
+    if (Found) return *Found;
+
+    FCachedMeshStats NewStats;
+    TArray<UStaticMeshComponent*> SMComps;
+    Actor->GetComponents<UStaticMeshComponent>(SMComps);
+    for (UStaticMeshComponent* C : SMComps)
+        {
+        if (!C) continue;
+        UStaticMesh * SM = C->GetStaticMesh();
+        if (!SM) continue;
+        NewStats.NumTriangles += SM->GetNumTriangles(0);
+        NewStats.NumMaterials += SM->GetStaticMaterials().Num();
+        NewStats.MemoryMB += SM->GetResourceSizeBytes(EResourceSizeMode::EstimatedTotal) / (1024.f * 1024.f);
+        }
+
+    CachedStats.Add(Actor, NewStats);
+    return CachedStats[Actor];
 }

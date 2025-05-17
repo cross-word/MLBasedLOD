@@ -11,9 +11,8 @@ public:
 	static UMLInferenceHelper& Get();
 	std::vector<float> PreProcessActor(AActor* Actor, UWorld* World, const FMinimalViewInfo& ViewInfo);
 	std::vector<float> PreProcessActor(AActor* Actor, UWorld* World);
-
-private:
 	float GetActorScreenSize(AActor* TargetActor, UWorld* World);
+private:
 	float GetNumTriangle(AActor* Actor);
 	float GetNumMaterial(AActor* Actor);
 	float GetMemoryUsage(AActor* Actor);

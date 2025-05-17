@@ -18,18 +18,18 @@ void IMLBasedLODSelectorModule::StartupModule()
     PostEngineInitHandle = FCoreDelegates::OnPostEngineInit.AddRaw(this, &IMLBasedLODSelectorModule::OnPostEngineInit);
     NaniteMLManagerInstance = NewObject<UNaniteMLManager>();
 
-    // 2) 월드가 만들어질 때마다 후보 리스트 구축
+    // 월드가 만들어질 때마다 레벨의 액터들 등록
     FWorldDelegates::OnPostWorldInitialization.AddLambda(
         [](UWorld* World, const UWorld::InitializationValues&)
         {
             auto* Manager = IMLBasedLODSelectorModule::GetMLManager();
             if (!Manager) return;
 
-            // (A) 월드에 이미 존재하는 액터 등록 1회
+            // 월드에 이미 존재하는 액터 등록
             for (TActorIterator<AActor> It(World); It; ++It)
                 Manager->RegisterCandidate(*It);
 
-            // (B) 앞으로 스폰되는 액터 등록
+            // 앞으로 스폰되는 액터 등록
             World->AddOnActorSpawnedHandler(
                 FOnActorSpawned::FDelegate::CreateLambda(
                     [Manager](AActor* NewActor)
